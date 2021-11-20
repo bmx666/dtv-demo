@@ -45,6 +45,10 @@ def populateDTS(trwDT, trwIncludedFiles, filename):
             # Now pick the comment part of the line
             codeComment = re.search('(?<=\/\*).*(?=\*\/)', line.strip())
 
+            # Remove false positive
+            if codeComment and "<no-file>:<no-line>" in codeComment.group(0).strip():
+                codeComment = None
+
             # If found, then clean-up
             if codeComment:
                 # The last (rightmost) file in the comma-separted list of filename:lineno
