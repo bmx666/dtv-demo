@@ -53,9 +53,9 @@ def populateDTS(trwDT, trwIncludedFiles, filename):
             if codeComment:
                 # The last (rightmost) file in the comma-separted list of filename:lineno
                 # Line numbers are made-up of integers after a ":" colon.
-                listOfSourcefiles = codeComment.group(0).strip().split(',')
+                listOfSourcefiles = list(map(os.path.realpath, list(map(str.strip, codeComment.group(0).strip().split(',')))))
                 includedFiles.append(listOfSourcefiles)
-                strippedLineNums = os.path.realpath(re.search('.*?(?=:)', listOfSourcefiles[-1]).group(0).strip())
+                strippedLineNums = re.search('.*?(?=:)', listOfSourcefiles[-1]).group(0).strip()
 
                 # Filename is the last (rightmost) word in a forward-slash-separetd path string
                 includedFilename = strippedLineNums.split('/')[-1]
