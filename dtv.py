@@ -60,8 +60,8 @@ def populateDTS(trwDT, trwIncludedFiles, filename):
                 # Filename is the last (rightmost) word in a forward-slash-separetd path string
                 includedFilename = strippedLineNums.split('/')[-1]
             else:
-                includedFilename = '<no-file>'
-                includedFiles.append(['<no-file>'])
+                includedFilename = ''
+                includedFiles.append([''])
                 strippedLineNums = ''
 
             # Add line to the list
@@ -70,7 +70,7 @@ def populateDTS(trwDT, trwIncludedFiles, filename):
             lineNum += 1
 
             # Pick a different background color for each filename
-            if '<no-file>' not in includedFilename:
+            if includedFilename:
                 colorHash = (int(hashlib.sha1(includedFilename.encode('utf-8')).hexdigest(), 16) % 16) * 4
                 prevColorHash = colorHash
                 trwDT.topLevelItem(trwDT.topLevelItemCount()-1).setBackground(1, QColor(255-colorHash*2, 240, 192+colorHash));
@@ -250,7 +250,7 @@ class main(QMainWindow):
             return
 
         # Skip if current row is "whitespace"
-        if self.ui.trwDT.currentItem().text(2) == '<no-file>':
+        if self.ui.trwDT.currentItem().text(2) == '':
             return
 
         # Else identify and highlight the source file of the current row
@@ -286,7 +286,7 @@ class main(QMainWindow):
         lineNum = int(self.ui.trwDT.currentItem().text(0))
         lastIncludedFile = includedFiles[lineNum-1][-1]
         dtsiFileName = lastIncludedFile.split(':')[0].strip()
-        if dtsiFileName == '<no-file>':
+        if dtsiFileName == '':
             QMessageBox.information(self,
                                     'DTV',
                                     'No file for the curent line',
