@@ -149,8 +149,10 @@ def annotateDTS(trwIncludedFiles, dtsFile):
 
     return tmpAnnotatedFileName
 
-def highlightFileInTree(trwIncludedFiles, fileName):
-    currItem = trwIncludedFiles.findItems(fileName, QtCore.Qt.MatchRecursive)[0]
+def highlightFileInTree(trwIncludedFiles, filePath):
+    fileName = filePath.split('/')[-1]
+    items = trwIncludedFiles.findItems(fileName, QtCore.Qt.MatchRecursive)
+    currItem = next(item for item in items if item.toolTip(0) == filePath)
 
     # highlight/select current item
     trwIncludedFiles.setCurrentItem(currItem)
@@ -268,7 +270,7 @@ class main(QMainWindow):
 
         # Else identify and highlight the source file of the current row
         if self.ui.trwDT.currentItem():
-            highlightFileInTree(self.ui.trwIncludedFiles, self.ui.trwDT.currentItem().text(2))
+            highlightFileInTree(self.ui.trwIncludedFiles, self.ui.trwDT.currentItem().text(3))
             showOriginalLineinLabel(self.ui.lblDT, int(self.ui.trwDT.currentItem().text(0)))
 
     def launchEditor(self, srcFileName, srcLineNum):
