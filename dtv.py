@@ -378,6 +378,12 @@ class main(QMainWindow):
     def load_signals(self):
         pass
 
+try:
+    subprocess.run('which cpp dtc', stdout=PIPE, stderr=PIPE, shell=True, check=True)
+except subprocess.CalledProcessError as e:
+    print('EXCEPTION!', e)
+    exit(e.returncode)
+
 app = QApplication(sys.argv)
 
 main = main()
