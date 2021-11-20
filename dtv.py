@@ -72,7 +72,6 @@ def populateDTS(trwDT, trwIncludedFiles, filename):
             # Add line to the list
             rowItem = QtWidgets.QTreeWidgetItem([str(lineNum), lineContents, includedFilename, strippedLineNums])
             trwDT.addTopLevelItem(rowItem)
-            lineNum += 1
 
             # Pick a different background color for each filename
             if includedFilename:
@@ -84,6 +83,17 @@ def populateDTS(trwDT, trwIncludedFiles, filename):
 
             trwDT.topLevelItem(trwDT.topLevelItemCount()-1).setBackground(1, bgColor)
 
+            # Include parents
+            if codeComment:
+                for sourcefile in listOfSourcefiles:
+                    strippedLineNumsExtra = os.path.realpath(re.search('.*?(?=:)', sourcefile).group(0).strip())
+                    includedFilenameExtra = strippedLineNumsExtra.split('/')[-1]
+                    if strippedLineNums != strippedLineNumsExtra:
+                        rowItem = QtWidgets.QTreeWidgetItem([str(lineNum), "", includedFilenameExtra, strippedLineNumsExtra])
+                        trwDT.addTopLevelItem(rowItem)
+                        trwDT.topLevelItem(trwDT.topLevelItemCount()-1).setForeground(0, QColor(255, 255, 255));
+
+            lineNum += 1
 
 def populateIncludedFiles(trwIncludedFiles, dtsFile, inputIncludeDirs):
 
