@@ -78,13 +78,11 @@ def populateDTS(trwDT, trwIncludedFiles, filename):
             if includedFilename:
                 colorHash = (int(hashlib.sha1(includedFilename.encode('utf-8')).hexdigest(), 16) % 16) * 4
                 prevColorHash = colorHash
-                trwDT.topLevelItem(trwDT.topLevelItemCount()-1).setBackground(1, QColor(255-colorHash*2, 240, 192+colorHash));
+                bgColor = QColor(255-colorHash*2, 240, 192+colorHash)
             else:
-                if 'prevColorHash' in locals():
-                    colorHash = prevColorHash
-                    trwDT.topLevelItem(trwDT.topLevelItemCount()-1).setBackground(1, QColor(255-colorHash*2, 240, 192+colorHash));
-                else:
-                    trwDT.topLevelItem(trwDT.topLevelItemCount()-1).setBackground(1, QColor(255, 255, 255));
+                bgColor = QColor(255, 255, 255)
+
+            trwDT.topLevelItem(trwDT.topLevelItemCount()-1).setBackground(1, bgColor)
 
 
 def populateIncludedFiles(trwIncludedFiles, dtsFile, inputIncludeDirs):
