@@ -271,6 +271,7 @@ class main(QMainWindow):
 
         # Skip if current row is "whitespace"
         if self.ui.trwDT.currentItem().text(2) == '':
+            self.ui.lblDT.setText('')
             return
 
         # Else identify and highlight the source file of the current row
