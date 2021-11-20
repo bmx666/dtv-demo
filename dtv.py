@@ -182,16 +182,16 @@ def getLines(fileName, startLineNum, endLineNum):
 
     return lines
 
-def showOriginalLineinLabel(lblDT, lineNum):
+def showOriginalLineinLabel(lblDT, lineNum, filePath):
 
-    lastIncludedFile = includedFiles[lineNum-1][-1]
-    fileName = lastIncludedFile.split(':')[0].strip()
+    includedFile = next(file for file in includedFiles[lineNum-1] if filePath == file.split(':')[0].strip())
+    fileName = includedFile.split(':')[0].strip()
 
     # extract line numbers in source-file
     # TODO: Special Handling for opening and closing braces in DTS
     #       (no need to show ENTIRE node, right?)
-    startLineNum = int(re.split('[[:-]', lastIncludedFile)[-4].strip())
-    endLineNum = int(re.split('[[:-]', lastIncludedFile)[-2].strip())
+    startLineNum = int(re.split('[[:-]', includedFile)[-4].strip())
+    endLineNum = int(re.split('[[:-]', includedFile)[-2].strip())
     #print('Line='+str(lineNum), 'Source='+fileName, startLineNum, 'to', endLineNum)
     lblDT.setText(getLines(fileName, startLineNum, endLineNum))
 
@@ -276,7 +276,7 @@ class main(QMainWindow):
         # Else identify and highlight the source file of the current row
         if self.ui.trwDT.currentItem():
             highlightFileInTree(self.ui.trwIncludedFiles, self.ui.trwDT.currentItem().text(3))
-            showOriginalLineinLabel(self.ui.lblDT, int(self.ui.trwDT.currentItem().text(0)))
+            showOriginalLineinLabel(self.ui.lblDT, int(self.ui.trwDT.currentItem().text(0)), self.ui.trwDT.currentItem().text(3))
 
     def launchEditor(self, srcFileName, srcLineNum):
 
@@ -304,8 +304,9 @@ class main(QMainWindow):
 
         # TODO: Refactor. Same logic used by showOriginalLineinLabel() too
         lineNum = int(self.ui.trwDT.currentItem().text(0))
-        lastIncludedFile = includedFiles[lineNum-1][-1]
-        dtsiFileName = lastIncludedFile.split(':')[0].strip()
+        filePath = self.ui.trwDT.currentItem().text(3)
+        includedFile = next(file for file in includedFiles[lineNum-1] if filePath == file.split(':')[0].strip())
+        dtsiFileName = includedFile.split(':')[0].strip()
         if dtsiFileName == '':
             QMessageBox.information(self,
                                     'DTV',
@@ -313,7 +314,7 @@ class main(QMainWindow):
                                     QMessageBox.Ok)
             return
 
-        dtsiLineNum = int(re.split('[[:-]', lastIncludedFile)[-4].strip())
+        dtsiLineNum = int(re.split('[[:-]', includedFile)[-4].strip())
         self.launchEditor(dtsiFileName, dtsiLineNum)
 
     def editIncludedFile(self):
