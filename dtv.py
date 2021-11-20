@@ -55,16 +55,17 @@ def populateDTS(trwDT, trwIncludedFiles, filename):
                 # Line numbers are made-up of integers after a ":" colon.
                 listOfSourcefiles = codeComment.group(0).strip().split(',')
                 includedFiles.append(listOfSourcefiles)
-                strippedLineNums = re.search('.*?(?=:)', listOfSourcefiles[-1]).group(0).strip()
+                strippedLineNums = os.path.realpath(re.search('.*?(?=:)', listOfSourcefiles[-1]).group(0).strip())
 
                 # Filename is the last (rightmost) word in a forward-slash-separetd path string
                 includedFilename = strippedLineNums.split('/')[-1]
             else:
                 includedFilename = '<no-file>'
                 includedFiles.append(['<no-file>'])
+                strippedLineNums = ''
 
             # Add line to the list
-            rowItem = QtWidgets.QTreeWidgetItem([str(lineNum), lineContents, includedFilename])
+            rowItem = QtWidgets.QTreeWidgetItem([str(lineNum), lineContents, includedFilename, strippedLineNums])
             trwDT.addTopLevelItem(rowItem)
             lineNum += 1
 
@@ -354,7 +355,7 @@ class main(QMainWindow):
         self.ui.btnFindNext.clicked.connect(self.findTextinDTS)
         self.ui.txtFindText.returnPressed.connect(self.findTextinDTS)
 
-        self.trwDT.setHeaderLabels(['Line No.', 'DTS content ....', 'Source File'])
+        self.trwDT.setHeaderLabels(['Line No.', 'DTS content ....', 'Source File', 'Full path'])
 
         self.center()
         self.show()
