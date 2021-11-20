@@ -131,14 +131,19 @@ def annotateDTS(trwIncludedFiles, dtsFile):
     populateIncludedFiles(trwIncludedFiles, dtsFile, incIncludes)
 
     # cpp ${cpp_flags} ${cpp_includes} ${dtx} | ${DTC} ${dtc_flags} ${dtc_include} -I dts
-    cpp = 'cpp '
-    cppFlags += '-nostdinc -undef -D__DTS__ -x assembler-with-cpp '
-    cppResult = subprocess.run(cpp + cppFlags + cppIncludes + ' ' + dtsFile,
-                               stdout=PIPE, stderr=PIPE, shell=True)
+    try:
+        cpp = 'cpp '
+        cppFlags += '-nostdinc -undef -D__DTS__ -x assembler-with-cpp '
+        cppResult = subprocess.run(cpp + cppFlags + cppIncludes + ' ' + dtsFile,
+                                   stdout=PIPE, stderr=PIPE, shell=True, check=True)
 
-    dtc = 'dtc '
-    dtcFlags = '-I dts -O dts -f -s -T -T -o - '
-    dtcResult = subprocess.run(dtc + dtcFlags + dtcIncludes, stdout=PIPE, stderr=PIPE, input=cppResult.stdout, shell=True)
+        dtc = 'dtc '
+        dtcFlags = '-I dts -O dts -f -s -T -T -o - '
+        dtcResult = subprocess.run(dtc + dtcFlags + dtcIncludes, stdout=PIPE, stderr=PIPE, input=cppResult.stdout, shell=True, check=True)
+
+    except subprocess.CalledProcessError as e:
+        print('EXCEPTION!', e)
+        exit(e.returncode)
 
     # Create a temporary file in the current working directory
     (tmpAnnotatedFile, tmpAnnotatedFileName) = tempfile.mkstemp(dir=os.path.dirname(os.path.realpath(__file__)),
