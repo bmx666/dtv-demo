@@ -16,7 +16,7 @@ class includeTree(object):
             fullPath = path + '/' + name
             if (os.path.isfile(fullPath)):
                 # File found!
-                return (fullPath)
+                return os.path.realpath(fullPath)
 
         # File not found
         return None
@@ -29,7 +29,7 @@ class includeTree(object):
         # NOTE: currentNode is the 'self' param here.
 
         currentFile = currentNode.file
-        currDir = os.path.dirname(currentFile)
+        currDir = os.path.realpath(os.path.dirname(currentFile))
 
         # Add directory of the currentFile to
         # the list of dirs to search for included files
