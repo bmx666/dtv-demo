@@ -64,6 +64,11 @@ def populateDTS(trwDT, trwIncludedFiles, filename):
                 includedFiles.append([''])
                 strippedLineNums = ''
 
+                # skip empty line
+                if not (lineContents.strip()):
+                    lineNum += 1
+                    continue
+
             # Add line to the list
             rowItem = QtWidgets.QTreeWidgetItem([str(lineNum), lineContents, includedFilename, strippedLineNums])
             trwDT.addTopLevelItem(rowItem)
