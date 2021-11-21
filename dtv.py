@@ -20,6 +20,9 @@ from PyQt5.uic import loadUi
 
 includedFiles = list()
 
+def getTopLevelItem(trwDT):
+    return trwDT.topLevelItem(trwDT.topLevelItemCount()-1)
+
 def populateDTS(trwDT, trwIncludedFiles, filename):
 
     # Clear remnants from previously opened file
@@ -83,7 +86,8 @@ def populateDTS(trwDT, trwIncludedFiles, filename):
             else:
                 bgColor = QColor(255, 255, 255)
 
-            trwDT.topLevelItem(trwDT.topLevelItemCount()-1).setBackground(1, bgColor)
+            item = getTopLevelItem(trwDT)
+            item.setBackground(1, bgColor)
 
             # Include parents
             if codeComment:
@@ -93,10 +97,11 @@ def populateDTS(trwDT, trwIncludedFiles, filename):
                     if strippedLineNums != strippedLineNumsExtra:
                         rowItem = QtWidgets.QTreeWidgetItem([str(lineNum), "", includedFilenameExtra, strippedLineNumsExtra])
                         trwDT.addTopLevelItem(rowItem)
-                        trwDT.topLevelItem(trwDT.topLevelItemCount()-1).setForeground(0, QColor(255, 255, 255));
+                        item = getTopLevelItem(trwDT)
+                        item.setForeground(0, QColor(255, 255, 255));
 
             if cleanlineContents != lineContents:
-                item = trwDT.topLevelItem(trwDT.topLevelItemCount()-1)
+                item = getTopLevelItem(trwDT)
                 item.setForeground(1, QColor(255, 0, 0))
                 f = item.font(0)
                 f.setStrikeOut(True)
