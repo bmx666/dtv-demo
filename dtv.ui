@@ -190,7 +190,7 @@
          </item>
         </layout>
        </widget>
-       <widget class="QLabel" name="lblDT">
+       <widget class="QTextEdit" name="lblDT">
         <property name="sizePolicy">
          <sizepolicy hsizetype="MinimumExpanding" vsizetype="Maximum">
           <horstretch>8</horstretch>
