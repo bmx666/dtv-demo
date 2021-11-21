@@ -49,14 +49,16 @@ def populateDTS(trwDT, trwIncludedFiles, filename):
             codeComment = re.search('(?<=\/\*).*(?=\*\/)', line.strip())
 
             # Remove false positive
-            if codeComment and "<no-file>:<no-line>" in codeComment.group(0).strip():
-                codeComment = None
+            if codeComment:
+                codeComment = codeComment.group(0).strip()
+                if "<no-file>:<no-line>" in codeComment:
+                    codeComment = None
 
             # If found, then clean-up
             if codeComment:
                 # The last (rightmost) file in the comma-separted list of filename:lineno
                 # Line numbers are made-up of integers after a ":" colon.
-                listOfSourcefiles = list(map(os.path.realpath, list(map(str.strip, codeComment.group(0).strip().split(',')))))
+                listOfSourcefiles = list(os.path.realpath(file.strip()) for file in codeComment.split(','))
                 includedFiles.append(listOfSourcefiles)
                 strippedLineNums = re.search('.*?(?=:)', listOfSourcefiles[-1]).group(0).strip()
 
