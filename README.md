@@ -6,4 +6,4 @@ Device Tree Visualizer
 2. cpp
 3. dtc or [patched dtc](https://github.com/bmx666/dtc)
 
-Patched dtc version replaces deleted nodes and deleted properties with empty nodes and properties with same name + suffix " \_DELETED\_ " for parsing.
+Patched dtc version append tag "\_\_\[|\>\*DELETED\*\<|\]\_\_" into comment (list of files) for deleted nodes and properties.
