@@ -69,8 +69,10 @@ def populateDTS(trwDT, trwIncludedFiles, filename):
                     lineNum += 1
                     continue
 
+            cleanlineContents = lineContents.replace(" _DELETED_ ", "")
+
             # Add line to the list
-            rowItem = QtWidgets.QTreeWidgetItem([str(lineNum), lineContents, includedFilename, strippedLineNums])
+            rowItem = QtWidgets.QTreeWidgetItem([str(lineNum), cleanlineContents, includedFilename, strippedLineNums])
             trwDT.addTopLevelItem(rowItem)
 
             # Pick a different background color for each filename
@@ -92,6 +94,13 @@ def populateDTS(trwDT, trwIncludedFiles, filename):
                         rowItem = QtWidgets.QTreeWidgetItem([str(lineNum), "", includedFilenameExtra, strippedLineNumsExtra])
                         trwDT.addTopLevelItem(rowItem)
                         trwDT.topLevelItem(trwDT.topLevelItemCount()-1).setForeground(0, QColor(255, 255, 255));
+
+            if cleanlineContents != lineContents:
+                item = trwDT.topLevelItem(trwDT.topLevelItemCount()-1)
+                item.setForeground(1, QColor(255, 0, 0))
+                f = item.font(0)
+                f.setStrikeOut(True)
+                item.setFont(1, f)
 
             lineNum += 1
 
