@@ -20,6 +20,8 @@ from PyQt5.uic import loadUi
 
 includedFiles = list()
 
+DELETED_TAG = "__[|>*DELETED*<|]__"
+
 def getTopLevelItem(trwDT):
     return trwDT.topLevelItem(trwDT.topLevelItemCount()-1)
 
@@ -58,12 +60,23 @@ def populateDTS(trwDT, trwIncludedFiles, filename):
             if codeComment:
                 # The last (rightmost) file in the comma-separted list of filename:lineno
                 # Line numbers are made-up of integers after a ":" colon.
-                listOfSourcefiles = list(os.path.realpath(file.strip()) for file in codeComment.split(','))
-                includedFiles.append(listOfSourcefiles)
-                strippedLineNums = re.search('.*?(?=:)', listOfSourcefiles[-1]).group(0).strip()
+                listOfSourcefiles = []
+                for file in codeComment.split(','):
+                    if DELETED_TAG in file:
+                        listOfSourcefiles.append('')
+                    else:
+                        listOfSourcefiles.append(os.path.realpath(file.strip()))
 
-                # Filename is the last (rightmost) word in a forward-slash-separetd path string
-                includedFilename = strippedLineNums.split('/')[-1]
+                includedFiles.append(listOfSourcefiles)
+
+                if listOfSourcefiles[-1]:
+                    strippedLineNums = re.search('.*?(?=:)', listOfSourcefiles[-1]).group(0).strip()
+                    # Filename is the last (rightmost) word in a forward-slash-separetd path string
+                    includedFilename = strippedLineNums.split('/')[-1]
+                else:
+                    strippedLineNums = ''
+                    includedFilename = ''
+
             else:
                 includedFilename = ''
                 includedFiles.append([''])
@@ -74,10 +87,9 @@ def populateDTS(trwDT, trwIncludedFiles, filename):
                     lineNum += 1
                     continue
 
-            cleanlineContents = lineContents.replace(" _DELETED_ ", "")
 
             # Add line to the list
-            rowItem = QtWidgets.QTreeWidgetItem([str(lineNum), cleanlineContents, includedFilename, strippedLineNums])
+            rowItem = QtWidgets.QTreeWidgetItem([str(lineNum), lineContents, includedFilename, strippedLineNums])
             trwDT.addTopLevelItem(rowItem)
 
             # Pick a different background color for each filename
@@ -93,21 +105,23 @@ def populateDTS(trwDT, trwIncludedFiles, filename):
 
             # Include parents
             if codeComment:
-                for sourcefile in listOfSourcefiles:
-                    strippedLineNumsExtra = os.path.realpath(re.search('.*?(?=:)', sourcefile).group(0).strip())
-                    includedFilenameExtra = strippedLineNumsExtra.split('/')[-1]
-                    if strippedLineNums != strippedLineNumsExtra:
-                        rowItem = QtWidgets.QTreeWidgetItem([str(lineNum), "", includedFilenameExtra, strippedLineNumsExtra])
-                        trwDT.addTopLevelItem(rowItem)
-                        item = getTopLevelItem(trwDT)
-                        item.setForeground(0, QColor(255, 255, 255));
 
-            if cleanlineContents != lineContents:
-                item = getTopLevelItem(trwDT)
-                item.setForeground(1, QColor(255, 0, 0))
-                f = item.font(0)
-                f.setStrikeOut(True)
-                item.setFont(1, f)
+                if DELETED_TAG in codeComment:
+                    item = getTopLevelItem(trwDT)
+                    item.setForeground(1, QColor(255, 0, 0))
+                    f = item.font(0)
+                    f.setStrikeOut(True)
+                    item.setFont(1, f)
+
+                for sourcefile in listOfSourcefiles:
+                    if sourcefile:
+                        strippedLineNumsExtra = os.path.realpath(re.search('.*?(?=:)', sourcefile).group(0).strip())
+                        includedFilenameExtra = strippedLineNumsExtra.split('/')[-1]
+                        if strippedLineNums != strippedLineNumsExtra:
+                            rowItem = QtWidgets.QTreeWidgetItem([str(lineNum), "", includedFilenameExtra, strippedLineNumsExtra])
+                            trwDT.addTopLevelItem(rowItem)
+                            item = getTopLevelItem(trwDT)
+                            item.setForeground(0, QColor(255, 255, 255));
 
             lineNum += 1
 
