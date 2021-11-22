@@ -129,7 +129,7 @@ class includeTree(object):
             node.printChildrenFilePaths(level + 1)
 
     def __init__(self, topFile, includeDirs, includeMacros=([])):
-        self.file = topFile
+        self.file = os.path.realpath(topFile)
         self.includeDirs = includeDirs
         self.children = []
         self.findIncludedFiles(includeDirs, includeMacros)
