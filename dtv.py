@@ -62,22 +62,23 @@ def populateDTS(trwDT, trwIncludedFiles, filename):
                 # Line numbers are made-up of integers after a ":" colon.
                 listOfSourcefiles = []
                 for file in codeComment.split(','):
-                    if DELETED_TAG in file:
-                        listOfSourcefiles.append('')
-                    else:
+                    if not DELETED_TAG in file:
                         listOfSourcefiles.append(os.path.realpath(file.strip()))
 
                 includedFiles.append(listOfSourcefiles)
 
                 if listOfSourcefiles[-1]:
+                    fileWithLineNums = listOfSourcefiles[-1]
                     strippedLineNums = re.search('.*?(?=:)', listOfSourcefiles[-1]).group(0).strip()
                     # Filename is the last (rightmost) word in a forward-slash-separetd path string
                     includedFilename = strippedLineNums.split('/')[-1]
                 else:
+                    fileWithLineNums = ''
                     strippedLineNums = ''
                     includedFilename = ''
 
             else:
+                fileWithLineNums = ''
                 includedFilename = ''
                 includedFiles.append([''])
                 strippedLineNums = ''
@@ -89,7 +90,7 @@ def populateDTS(trwDT, trwIncludedFiles, filename):
 
 
             # Add line to the list
-            rowItem = QtWidgets.QTreeWidgetItem([str(lineNum), lineContents, includedFilename, strippedLineNums])
+            rowItem = QtWidgets.QTreeWidgetItem([str(lineNum), lineContents, includedFilename, fileWithLineNums])
             trwDT.addTopLevelItem(rowItem)
 
             # Pick a different background color for each filename
@@ -113,15 +114,15 @@ def populateDTS(trwDT, trwIncludedFiles, filename):
                     f.setStrikeOut(True)
                     item.setFont(1, f)
 
-                for sourcefile in listOfSourcefiles:
-                    if sourcefile:
-                        strippedLineNumsExtra = os.path.realpath(re.search('.*?(?=:)', sourcefile).group(0).strip())
-                        includedFilenameExtra = strippedLineNumsExtra.split('/')[-1]
-                        if strippedLineNums != strippedLineNumsExtra:
-                            rowItem = QtWidgets.QTreeWidgetItem([str(lineNum), "", includedFilenameExtra, strippedLineNumsExtra])
-                            trwDT.addTopLevelItem(rowItem)
-                            item = getTopLevelItem(trwDT)
-                            item.setForeground(0, QColor(255, 255, 255));
+                # Skip add parents for close bracket of node
+                if not (DELETED_TAG in codeComment and "};" in lineContents.strip()):
+                    for fileWithLineNums in listOfSourcefiles[:-1]:
+                        strippedLineNums = os.path.realpath(re.search('.*?(?=:)', fileWithLineNums).group(0).strip())
+                        includedFilename = strippedLineNums.split('/')[-1]
+                        rowItem = QtWidgets.QTreeWidgetItem([str(lineNum), "", includedFilename, fileWithLineNums])
+                        trwDT.addTopLevelItem(rowItem)
+                        item = getTopLevelItem(trwDT)
+                        item.setForeground(0, QColor(255, 255, 255));
 
             lineNum += 1
 
@@ -184,7 +185,8 @@ def annotateDTS(trwIncludedFiles, dtsFile):
 
     return tmpAnnotatedFileName
 
-def highlightFileInTree(trwIncludedFiles, filePath):
+def highlightFileInTree(trwIncludedFiles, fileWithLineNums):
+    filePath = re.search('.*?(?=:)', fileWithLineNums).group(0).strip()
     fileName = filePath.split('/')[-1]
     items = trwIncludedFiles.findItems(fileName, QtCore.Qt.MatchRecursive)
     currItem = next(item for item in items if item.toolTip(0) == filePath)
@@ -212,18 +214,18 @@ def getLines(fileName, startLineNum, endLineNum):
 
     return lines
 
-def showOriginalLineinLabel(lblDT, lineNum, filePath):
+def showOriginalLineinLabel(lblDT, lineNum, fileWithLineNums):
 
-    includedFile = next(file for file in includedFiles[lineNum-1] if filePath == file.split(':')[0].strip())
-    fileName = includedFile.split(':')[0].strip()
+    includedFile = next(f for f in includedFiles[lineNum-1] if fileWithLineNums == f)
+    filePath = re.search('.*?(?=:)', fileWithLineNums).group(0).strip()
 
     # extract line numbers in source-file
     # TODO: Special Handling for opening and closing braces in DTS
     #       (no need to show ENTIRE node, right?)
     startLineNum = int(re.split('[[:-]', includedFile)[-4].strip())
     endLineNum = int(re.split('[[:-]', includedFile)[-2].strip())
-    #print('Line='+str(lineNum), 'Source='+fileName, startLineNum, 'to', endLineNum)
-    lblDT.setText(getLines(fileName, startLineNum, endLineNum))
+    #print('Line='+str(lineNum), 'Source='+filePath, startLineNum, 'to', endLineNum)
+    lblDT.setText(getLines(filePath, startLineNum, endLineNum))
 
 def center(window):
 
@@ -335,8 +337,8 @@ class main(QMainWindow):
 
         # TODO: Refactor. Same logic used by showOriginalLineinLabel() too
         lineNum = int(self.ui.trwDT.currentItem().text(0))
-        filePath = self.ui.trwDT.currentItem().text(3)
-        includedFile = next(file for file in includedFiles[lineNum-1] if filePath == file.split(':')[0].strip())
+        fileWithLineNums = self.ui.trwDT.currentItem().text(3)
+        includedFile = next(file for file in includedFiles[lineNum-1] if fileWithLineNums == file)
         dtsiFileName = includedFile.split(':')[0].strip()
         if dtsiFileName == '':
             QMessageBox.information(self,
