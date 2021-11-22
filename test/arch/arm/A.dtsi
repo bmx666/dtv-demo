@@ -1,0 +1,9 @@
+/ {
+	node {
+		prop;
+	};
+
+	nodeA: nodeA {
+		propA;
+	};
+};

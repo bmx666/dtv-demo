@@ -1,0 +1,22 @@
+/dts-v1/;
+
+#include "C.dtsi"
+
+/ {
+	prop = "TEST1";
+	node {
+		/delete-property/ prop;
+	};
+	nodeA {
+		prop_test1;
+	};
+	// /delete-node/ node;
+};
+
+&nodeA {
+	prop_test2;
+};
+
+/delete-node/ &nodeA;
+/delete-node/ &nodeB;
+/delete-node/ &nodeC;
