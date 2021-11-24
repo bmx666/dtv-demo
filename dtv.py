@@ -174,6 +174,8 @@ def annotateDTS(trwIncludedFiles, dtsFile):
 
     except subprocess.CalledProcessError as e:
         print('EXCEPTION!', e)
+        print('stdout: {}'.format(e.output.decode(sys.getfilesystemencoding())))
+        print('stderr: {}'.format(e.stderr.decode(sys.getfilesystemencoding())))
         exit(e.returncode)
 
     # Create a temporary file in the current working directory
