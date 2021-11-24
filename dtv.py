@@ -149,8 +149,8 @@ def annotateDTS(trwIncludedFiles, dtsFile):
     dtcIncludes = ''
     incIncludes = list()
 
-    # Current parser "plugin" claims to support DTS files under arch/arm* only
-    baseDir = re.search('^.*(?=arch\/arm)', dtsFile)
+    # Current parser "plugin" claims to support DTS files under arch/* only
+    baseDir = re.search('^.*(?=arch\/)', dtsFile)
     if baseDir:
         baseDirPath = baseDir.group(0)
 
