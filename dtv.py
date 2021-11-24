@@ -167,7 +167,13 @@ def annotateDTS(trwIncludedFiles, dtsFile):
         cppFlags += '-nostdinc -undef -D__DTS__ -x assembler-with-cpp '
         cppResult = subprocess.run(cpp + cppFlags + cppIncludes + ' ' + dtsFile,
                                    stdout=PIPE, stderr=PIPE, shell=True, check=True)
+    except subprocess.CalledProcessError as e:
+        print('EXCEPTION!', e)
+        print('stdout: {}'.format(e.output.decode(sys.getfilesystemencoding())))
+        print('stderr: {}'.format(e.stderr.decode(sys.getfilesystemencoding())))
+        exit(e.returncode)
 
+    try:
         dtc = 'dtc '
         dtcFlags = '-I dts -O dts -f -s -T -T -o - '
         dtcResult = subprocess.run(dtc + dtcFlags + dtcIncludes, stdout=PIPE, stderr=PIPE, input=cppResult.stdout, shell=True, check=True)
