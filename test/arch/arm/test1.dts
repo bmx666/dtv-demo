@@ -10,7 +10,6 @@
 	nodeA {
 		prop_test1;
 	};
-	// /delete-node/ node;
 };
 
 &nodeA {
@@ -20,3 +19,12 @@
 /delete-node/ &nodeA;
 /delete-node/ &nodeB;
 /delete-node/ &nodeC;
+
+/ {
+	/* delete N/A node and prop */
+	/delete-property/ prop_na;
+	/delete-node/ node_na;
+
+	/* delete existing node */
+	/delete-node/ node;
+};
