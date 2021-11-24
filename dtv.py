@@ -258,6 +258,9 @@ class main(QMainWindow):
         self.foundList = []
         self.foundIndex = 0
 
+        if len(sys.argv) > 1:
+            self.openDTSFile(sys.argv[1])
+
     def closeEvent(self, event):
         # Delete temporary file if created
         if self.annotatedTmpDTSFileName:
@@ -266,13 +269,17 @@ class main(QMainWindow):
             except OSError:
                 pass
 
-    def openDTSFile(self):
+    def openDTSFileUI(self):
 
         options = QFileDialog.Options()
         fileName, _ = QFileDialog.getOpenFileName(self,
                                                   "Select a DTS file to visualise...",
                                                   "", "All DTS Files (*.dts)",
                                                   options=options)
+        self.openDTSFile(fileName)
+
+    def openDTSFile(self, fileName):
+
         # If user selected a file then process it...
         if fileName:
             # Resolve symlinks
@@ -401,7 +408,7 @@ class main(QMainWindow):
 
     def load_ui(self):
         self.ui = loadUi('dtv.ui', self)
-        self.ui.openDTS.triggered.connect(self.openDTSFile)
+        self.ui.openDTS.triggered.connect(self.openDTSFileUI)
         self.ui.exitApp.triggered.connect(self.close)
         self.ui.optionsSettings.triggered.connect(self.showSettings)
         self.ui.trwDT.currentItemChanged.connect(self.highlightSourceFile)
