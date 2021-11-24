@@ -154,6 +154,10 @@ def annotateDTS(trwIncludedFiles, dtsFile):
     if baseDir:
         baseDirPath = baseDir.group(0)
 
+    # force include dir of dtsFile
+    cppIncludes += ' -I ' + os.path.dirname(dtsFile)
+    dtcIncludes += ' -i ' + os.path.dirname(dtsFile)
+
     for includeDirStub in includeDirStubs:
         cppIncludes += ' -I ' + baseDirPath + includeDirStub
         dtcIncludes += ' -i ' + baseDirPath + includeDirStub
