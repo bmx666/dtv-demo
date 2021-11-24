@@ -427,6 +427,13 @@ except subprocess.CalledProcessError as e:
     print('stderr: {}'.format(e.stderr.decode(sys.getfilesystemencoding())))
     exit(e.returncode)
 
+try:
+    subprocess.run('dtc --annotate -h', stdout=PIPE, stderr=PIPE, shell=True, check=True)
+except subprocess.CalledProcessError as e:
+    print('EXCEPTION!', e)
+    print('EXCEPTION!', 'dtc version it too old and it doesn\'t support "annotate" option')
+    exit(e.returncode)
+
 app = QApplication(sys.argv)
 
 main = main()
