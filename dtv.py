@@ -423,6 +423,8 @@ try:
     subprocess.run('which cpp dtc', stdout=PIPE, stderr=PIPE, shell=True, check=True)
 except subprocess.CalledProcessError as e:
     print('EXCEPTION!', e)
+    print('stdout: {}'.format(e.output.decode(sys.getfilesystemencoding())))
+    print('stderr: {}'.format(e.stderr.decode(sys.getfilesystemencoding())))
     exit(e.returncode)
 
 app = QApplication(sys.argv)
