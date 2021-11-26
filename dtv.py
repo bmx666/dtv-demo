@@ -112,6 +112,7 @@ def populateDTS(trwDT, trwIncludedFiles, filename):
                     item.setForeground(1, QColor(255, 0, 0))
                     f = item.font(0)
                     f.setStrikeOut(True)
+                    f.setBold(True)
                     item.setFont(1, f)
 
                 # Skip add parents for close bracket of node
