@@ -124,6 +124,11 @@ def populateDTS(trwDT, trwIncludedFiles, filename):
                         trwDT.addTopLevelItem(rowItem)
                         item = getTopLevelItem(trwDT)
                         item.setForeground(0, QColor(255, 255, 255));
+            else:
+                item = getTopLevelItem(trwDT)
+                item.setForeground(1, QColor(175, 175, 175))
+                f = item.font(0)
+                item.setFont(1, f)
 
             lineNum += 1
 
