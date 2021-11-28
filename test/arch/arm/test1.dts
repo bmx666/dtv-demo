@@ -32,4 +32,14 @@
 	nodeA: nodeA {
 		prop_new;
 	};
+
+	/* re-create nodeB with label NodeC */
+	nodeC: nodeB {
+		prop_new;
+	};
+
+	/* re-create nodeC with label NodeD */
+	nodeD: nodeC {
+		prop_new;
+	};
 };
