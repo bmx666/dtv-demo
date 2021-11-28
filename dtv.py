@@ -117,7 +117,7 @@ def populateDTS(trwDT, trwIncludedFiles, filename):
 
                 # Skip add parents for close bracket of node
                 if not (DELETED_TAG in codeComment and "};" in lineContents.strip()):
-                    for fileWithLineNums in listOfSourcefiles[:-1]:
+                    for fileWithLineNums in listOfSourcefiles[-2::-1]:
                         strippedLineNums = os.path.realpath(re.search('.*?(?=:)', fileWithLineNums).group(0).strip())
                         includedFilename = strippedLineNums.split('/')[-1]
                         rowItem = QtWidgets.QTreeWidgetItem([str(lineNum), "", includedFilename, fileWithLineNums])
