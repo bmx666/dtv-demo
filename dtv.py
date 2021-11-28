@@ -183,6 +183,10 @@ def annotateDTS(trwIncludedFiles, dtsFile):
         print('stderr: {}'.format(e.stderr.decode(sys.getfilesystemencoding())))
         exit(e.returncode)
 
+    dtsPlugin = True if re.findall(r'\s*\/plugin\/\s*;', cppResult.stdout.decode('utf-8')) else False
+    if dtsPlugin:
+        print('DTS file is plugin')
+
     try:
         dtc = 'dtc '
         dtcFlags = '-@ -I dts -O dts -f -s -T -T -o - '
