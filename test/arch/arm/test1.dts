@@ -27,4 +27,9 @@
 
 	/* delete existing node */
 	/delete-node/ node;
+
+	/* re-create nodeA again */
+	nodeA: nodeA {
+		prop_new;
+	};
 };
