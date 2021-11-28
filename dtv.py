@@ -48,7 +48,7 @@ def populateDTS(trwDT, trwIncludedFiles, filename):
                 lineContents = ""
 
             # Now pick the comment part of the line
-            codeComment = re.search('(?<=\/\*).*(?=\*\/)', line.strip())
+            codeComment = re.search('(?!.*\/\*)(?<=\*).*(?=\*\/)', line.strip())
 
             # Remove false positive
             if codeComment:
@@ -60,11 +60,7 @@ def populateDTS(trwDT, trwIncludedFiles, filename):
             if codeComment:
                 # The last (rightmost) file in the comma-separted list of filename:lineno
                 # Line numbers are made-up of integers after a ":" colon.
-                listOfSourcefiles = []
-                for file in codeComment.split(','):
-                    if not DELETED_TAG in file:
-                        listOfSourcefiles.append(os.path.realpath(file.strip()))
-
+                listOfSourcefiles = list(map(lambda f: os.path.realpath(f.strip()), codeComment.split(',')))
                 includedFiles.append(listOfSourcefiles)
 
                 if listOfSourcefiles[-1]:
@@ -88,6 +84,13 @@ def populateDTS(trwDT, trwIncludedFiles, filename):
                     lineNum += 1
                     continue
 
+            # find deleted tag
+            isDeleted = DELETED_TAG in lineContents
+            if isDeleted:
+                # remove deleted tag and uncomment content
+                lineContents = lineContents.replace(DELETED_TAG, '')
+                lineContents = re.sub('/\*\s*?\*/\s*', '', lineContents, flags=re.S)
+                lineContents = re.sub('/\*(.*)?\*/\s*', r'\g<1>', lineContents, flags=re.S)
 
             # Add line to the list
             rowItem = QtWidgets.QTreeWidgetItem([str(lineNum), lineContents, includedFilename, fileWithLineNums])
@@ -104,19 +107,18 @@ def populateDTS(trwDT, trwIncludedFiles, filename):
             item = getTopLevelItem(trwDT)
             item.setBackground(1, bgColor)
 
+            if isDeleted:
+                item = getTopLevelItem(trwDT)
+                item.setForeground(1, QColor(255, 0, 0))
+                f = item.font(0)
+                f.setStrikeOut(True)
+                f.setBold(True)
+                item.setFont(1, f)
+
             # Include parents
             if codeComment:
-
-                if DELETED_TAG in codeComment:
-                    item = getTopLevelItem(trwDT)
-                    item.setForeground(1, QColor(255, 0, 0))
-                    f = item.font(0)
-                    f.setStrikeOut(True)
-                    f.setBold(True)
-                    item.setFont(1, f)
-
                 # Skip add parents for close bracket of node
-                if not (DELETED_TAG in codeComment and "};" in lineContents.strip()):
+                if not (isDeleted and "};" in lineContents.strip()):
                     for fileWithLineNums in listOfSourcefiles[-2::-1]:
                         strippedLineNums = os.path.realpath(re.search('.*?(?=:)', fileWithLineNums).group(0).strip())
                         includedFilename = strippedLineNums.split('/')[-1]
@@ -124,7 +126,7 @@ def populateDTS(trwDT, trwIncludedFiles, filename):
                         trwDT.addTopLevelItem(rowItem)
                         item = getTopLevelItem(trwDT)
                         item.setForeground(0, QColor(255, 255, 255));
-            else:
+            elif not isDeleted:
                 item = getTopLevelItem(trwDT)
                 item.setForeground(1, QColor(175, 175, 175))
                 f = item.font(0)
