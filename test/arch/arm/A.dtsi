@@ -1,4 +1,6 @@
 / {
+	prop = "A";
+
 	node {
 		prop;
 	};

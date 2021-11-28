@@ -1,6 +1,8 @@
 #include "A.dtsi"
 
 / {
+	prop = "B";
+
 	node {
 		prop;
 	};
