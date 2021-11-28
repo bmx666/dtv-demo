@@ -185,7 +185,7 @@ def annotateDTS(trwIncludedFiles, dtsFile):
 
     try:
         dtc = 'dtc '
-        dtcFlags = '-I dts -O dts -f -s -T -T -o - '
+        dtcFlags = '-@ -I dts -O dts -f -s -T -T -o - '
         dtcResult = subprocess.run(dtc + dtcFlags + dtcIncludes, stdout=PIPE, stderr=PIPE, input=cppResult.stdout, shell=True, check=True)
 
     except subprocess.CalledProcessError as e:
