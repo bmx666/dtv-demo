@@ -39,33 +39,32 @@ def populateDTS(trwDT, trwIncludedFiles, filename):
         for line in f:
 
             # Look for the code (part before the "/*" comment)
-            lineContents = re.search('^.*(;|(?=\/\*))', line)
+            idx = line.rfind("/*")
 
-            # If found, then clean-up
-            if (lineContents):
-                lineContents= lineContents.group(0).rstrip()
+            if idx < 0:
+                lineContents = line.strip()
             else:
-                lineContents = ""
+                lineContents = line[:idx].rstrip()
 
-            # Now pick the comment part of the line
-            codeComment = re.search('(?!.*\/\*)(?<=\*).*(?=\*\/)', line.strip())
-
-            # Remove false positive
-            if codeComment:
-                codeComment = codeComment.group(0).strip()
-                if "<no-file>:<no-line>" in codeComment:
-                    codeComment = None
+            if idx > 0:
+                # Now pick the comment part of the line
+                commentFileList = line[idx+2:].strip()[:-2]
+                # Remove false positive
+                if "<no-file>:<no-line>" in commentFileList:
+                    commentFileList = None
+            else:
+                commentFileList = None
 
             # If found, then clean-up
-            if codeComment:
+            if commentFileList:
                 # The last (rightmost) file in the comma-separted list of filename:lineno
                 # Line numbers are made-up of integers after a ":" colon.
-                listOfSourcefiles = list(map(lambda f: os.path.realpath(f.strip()), codeComment.split(',')))
+                listOfSourcefiles = list(map(lambda f: os.path.realpath(f.strip()), commentFileList.split(',')))
                 includedFiles.append(listOfSourcefiles)
 
-                if listOfSourcefiles[-1]:
-                    fileWithLineNums = listOfSourcefiles[-1]
-                    strippedLineNums = re.search('.*?(?=:)', listOfSourcefiles[-1]).group(0).strip()
+                fileWithLineNums = listOfSourcefiles[-1]
+                if fileWithLineNums:
+                    strippedLineNums = fileWithLineNums.split(':', 1)[0]
                     # Filename is the last (rightmost) word in a forward-slash-separetd path string
                     includedFilename = strippedLineNums.split('/')[-1]
                 else:
@@ -88,8 +87,7 @@ def populateDTS(trwDT, trwIncludedFiles, filename):
             isDeleted = DELETED_TAG in lineContents
             if isDeleted:
                 # remove deleted tag and uncomment content
-                lineContents = lineContents.replace(DELETED_TAG, '')
-                lineContents = re.sub('/\*\s*?\*/\s*', '', lineContents, flags=re.S)
+                lineContents = lineContents.replace('/* ' + DELETED_TAG + ' */ ', '')
                 lineContents = re.sub('/\*(.*)?\*/\s*', r'\g<1>', lineContents, flags=re.S)
 
             # Add line to the list
@@ -104,23 +102,21 @@ def populateDTS(trwDT, trwIncludedFiles, filename):
             else:
                 bgColor = QColor(255, 255, 255)
 
-            item = getTopLevelItem(trwDT)
-            item.setBackground(1, bgColor)
+            rowItem.setBackground(1, bgColor)
 
             if isDeleted:
-                item = getTopLevelItem(trwDT)
-                item.setForeground(1, QColor(255, 0, 0))
-                f = item.font(0)
+                rowItem.setForeground(1, QColor(255, 0, 0))
+                f = rowItem.font(0)
                 f.setStrikeOut(True)
                 f.setBold(True)
-                item.setFont(1, f)
+                rowItem.setFont(1, f)
 
             # Include parents
-            if codeComment:
+            if commentFileList:
                 # Skip add parents for close bracket of node
                 if not (isDeleted and "};" in lineContents.strip()):
                     for fileWithLineNums in listOfSourcefiles[-2::-1]:
-                        strippedLineNums = os.path.realpath(re.search('.*?(?=:)', fileWithLineNums).group(0).strip())
+                        strippedLineNums = fileWithLineNums.split(':', 1)[0]
                         includedFilename = strippedLineNums.split('/')[-1]
                         rowItem = QtWidgets.QTreeWidgetItem([str(lineNum), "", includedFilename, fileWithLineNums])
                         trwDT.addTopLevelItem(rowItem)
@@ -210,7 +206,7 @@ def annotateDTS(trwIncludedFiles, dtsFile):
     return tmpAnnotatedFileName
 
 def highlightFileInTree(trwIncludedFiles, fileWithLineNums):
-    filePath = re.search('.*?(?=:)', fileWithLineNums).group(0).strip()
+    filePath = fileWithLineNums.split(':', 1)[0]
     fileName = filePath.split('/')[-1]
     items = trwIncludedFiles.findItems(fileName, QtCore.Qt.MatchRecursive)
     currItem = next(item for item in items if item.toolTip(0) == filePath)
@@ -241,7 +237,7 @@ def getLines(fileName, startLineNum, endLineNum):
 def showOriginalLineinLabel(lblDT, lineNum, fileWithLineNums):
 
     includedFile = next(f for f in includedFiles[lineNum-1] if fileWithLineNums == f)
-    filePath = re.search('.*?(?=:)', fileWithLineNums).group(0).strip()
+    filePath = fileWithLineNums.split(':', 1)[0]
 
     # extract line numbers in source-file
     # TODO: Special Handling for opening and closing braces in DTS
