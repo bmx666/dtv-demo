@@ -12,6 +12,7 @@ import sys
 import tempfile
 
 from includetree import includeTree
+from helper import loadConfig, annotateDTS
 
 from PyQt5.QtGui import QColor, QDesktopServices
 from PyQt5 import QtCore, QtGui, QtWidgets
@@ -128,73 +129,6 @@ def populateIncludedFiles(trwIncludedFiles, dtsFile, inputIncludeDirs):
     dtsIncludeTree.populateChildrenFileNames(dummyItem)
     trwIncludedFiles.addTopLevelItem(dummyItem.child(0).clone())
 
-def annotateDTS(trwIncludedFiles, dtsFile):
-
-    # Load configuration for the conf file
-    config = configparser.ConfigParser()
-    config.read('dtv.conf')
-
-    # Add or remove projects from this list
-    # Only the gerrit-events of changes to projects in this list will be processed.
-    includeDirStubs =  ast.literal_eval(config.get('dtv', 'include_dir_stubs'))
-
-    cppFlags = ''
-    cppIncludes = ''
-    dtcIncludes = ''
-    incIncludes = list()
-
-    # Current parser "plugin" claims to support DTS files under arch/* only
-    baseDir = re.search('^.*(?=arch\/)', dtsFile)
-    if baseDir:
-        baseDirPath = baseDir.group(0)
-
-    # force include dir of dtsFile
-    cppIncludes += ' -I ' + os.path.dirname(dtsFile)
-    dtcIncludes += ' -i ' + os.path.dirname(dtsFile)
-
-    for includeDirStub in includeDirStubs:
-        cppIncludes += ' -I ' + baseDirPath + includeDirStub
-        dtcIncludes += ' -i ' + baseDirPath + includeDirStub
-        incIncludes.append(baseDirPath + includeDirStub)
-
-    populateIncludedFiles(trwIncludedFiles, dtsFile, incIncludes)
-
-    # cpp ${cpp_flags} ${cpp_includes} ${dtx} | ${DTC} ${dtc_flags} ${dtc_include} -I dts
-    try:
-        cpp = 'cpp '
-        cppFlags += '-nostdinc -undef -D__DTS__ -x assembler-with-cpp '
-        cppResult = subprocess.run(cpp + cppFlags + cppIncludes + ' ' + dtsFile,
-                                   stdout=PIPE, stderr=PIPE, shell=True, check=True)
-    except subprocess.CalledProcessError as e:
-        print('EXCEPTION!', e)
-        print('stdout: {}'.format(e.output.decode(sys.getfilesystemencoding())))
-        print('stderr: {}'.format(e.stderr.decode(sys.getfilesystemencoding())))
-        exit(e.returncode)
-
-    dtsPlugin = True if re.findall(r'\s*\/plugin\/\s*;', cppResult.stdout.decode('utf-8')) else False
-    if dtsPlugin:
-        print('DTS file is plugin')
-
-    try:
-        dtc = 'dtc '
-        dtcFlags = '-@ -I dts -O dts -f -s -T -T -T -T -T -o - '
-        dtcResult = subprocess.run(dtc + dtcFlags + dtcIncludes, stdout=PIPE, stderr=PIPE, input=cppResult.stdout, shell=True, check=True)
-
-    except subprocess.CalledProcessError as e:
-        print('EXCEPTION!', e)
-        print('stdout: {}'.format(e.output.decode(sys.getfilesystemencoding())))
-        print('stderr: {}'.format(e.stderr.decode(sys.getfilesystemencoding())))
-        exit(e.returncode)
-
-    # Create a temporary file in the current working directory
-    (tmpAnnotatedFile, tmpAnnotatedFileName) = tempfile.mkstemp(dir=os.path.dirname(os.path.realpath(__file__)),
-                                                                prefix=os.path.basename(dtsFile) + '-',
-                                                                suffix='.dts.annotated')
-    with os.fdopen(tmpAnnotatedFile, 'w') as output:
-        output.write(dtcResult.stdout.decode('utf-8') )
-
-    return tmpAnnotatedFileName
-
 def highlightFileInTree(trwIncludedFiles, fileWithLineNums):
     filePath = fileWithLineNums.split(':', 1)[0]
     fileName = filePath.split('/')[-1]
@@ -290,7 +224,12 @@ class main(QMainWindow):
 
             annotatedTmpDTSFileName = None
             try:
-                annotatedTmpDTSFileName = annotateDTS(self.ui.trwIncludedFiles, fileName)
+                # Current parser "plugin" claims to support DTS files under arch/* only
+                baseDirPath = re.search('^.*(?=arch\/)', fileName).group(0)
+                incIncludes = loadConfig(baseDirPath)
+
+                annotatedTmpDTSFileName = annotateDTS(fileName, incIncludes)
+                populateIncludedFiles(self.ui.trwIncludedFiles, fileName, incIncludes)
                 populateDTS(self.ui.trwDT, self.ui.trwIncludedFiles, annotatedTmpDTSFileName)
             except Exception as e:
                 print('EXCEPTION!', e)
