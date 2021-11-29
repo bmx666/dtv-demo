@@ -310,6 +310,8 @@ class main(QMainWindow):
 
             self.trwDT.header().setSectionResizeMode(0, QHeaderView.ResizeToContents)
             self.trwDT.header().setSectionResizeMode(2, QHeaderView.ResizeToContents)
+            self.trwDT.header().setSectionHidden(3, True)
+            self.trwDT.header().resizeSection(1, 500)
 
     def highlightSourceFile(self):
 
