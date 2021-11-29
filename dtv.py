@@ -18,8 +18,6 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtWidgets import QApplication, QMainWindow, QFileDialog, QDialog, QHeaderView, QMessageBox
 from PyQt5.uic import loadUi
 
-includedFiles = list()
-
 DELETED_TAG = "__[|>*DELETED*<|]__"
 
 def getTopLevelItem(trwDT):
@@ -28,7 +26,6 @@ def getTopLevelItem(trwDT):
 def populateDTS(trwDT, trwIncludedFiles, filename):
 
     # Clear remnants from previously opened file
-    includedFiles.clear()
     trwDT.clear()
     trwIncludedFiles.expandAll()
 
@@ -60,26 +57,19 @@ def populateDTS(trwDT, trwIncludedFiles, filename):
                 # The last (rightmost) file in the comma-separted list of filename:lineno
                 # Line numbers are made-up of integers after a ":" colon.
                 listOfSourcefiles = list(map(lambda f: os.path.realpath(f.strip()), commentFileList.split(',')))
-                includedFiles.append(listOfSourcefiles)
-
                 fileWithLineNums = listOfSourcefiles[-1]
-                if fileWithLineNums:
-                    strippedLineNums = fileWithLineNums.split(':', 1)[0]
-                    # Filename is the last (rightmost) word in a forward-slash-separetd path string
-                    includedFilename = strippedLineNums.split('/')[-1]
-                else:
-                    fileWithLineNums = ''
-                    strippedLineNums = ''
-                    includedFilename = ''
 
+                if fileWithLineNums:
+                    # Filename is the last (rightmost) word in a forward-slash-separetd path string
+                    includedFilename = fileWithLineNums.split(':', 1)[0].split('/')[-1]
             else:
                 fileWithLineNums = ''
+
+            if not fileWithLineNums:
                 includedFilename = ''
-                includedFiles.append([''])
-                strippedLineNums = ''
 
                 # skip empty line
-                if not (lineContents.strip()):
+                if not (lineContents.lstrip()):
                     lineNum += 1
                     continue
 
@@ -236,14 +226,13 @@ def getLines(fileName, startLineNum, endLineNum):
 
 def showOriginalLineinLabel(lblDT, lineNum, fileWithLineNums):
 
-    includedFile = next(f for f in includedFiles[lineNum-1] if fileWithLineNums == f)
     filePath = fileWithLineNums.split(':', 1)[0]
 
     # extract line numbers in source-file
     # TODO: Special Handling for opening and closing braces in DTS
     #       (no need to show ENTIRE node, right?)
-    startLineNum = int(re.split('[[:-]', includedFile)[-4].strip())
-    endLineNum = int(re.split('[[:-]', includedFile)[-2].strip())
+    startLineNum = int(re.split('[[:-]', fileWithLineNums)[-4].strip())
+    endLineNum = int(re.split('[[:-]', fileWithLineNums)[-2].strip())
     #print('Line='+str(lineNum), 'Source='+filePath, startLineNum, 'to', endLineNum)
     lblDT.setText(getLines(filePath, startLineNum, endLineNum))
 
@@ -365,8 +354,7 @@ class main(QMainWindow):
         # TODO: Refactor. Same logic used by showOriginalLineinLabel() too
         lineNum = int(self.ui.trwDT.currentItem().text(0))
         fileWithLineNums = self.ui.trwDT.currentItem().text(3)
-        includedFile = next(file for file in includedFiles[lineNum-1] if fileWithLineNums == file)
-        dtsiFileName = includedFile.split(':')[0].strip()
+        dtsiFileName = fileWithLineNums.split(':')[0].strip()
         if dtsiFileName == '':
             QMessageBox.information(self,
                                     'DTV',
@@ -374,7 +362,7 @@ class main(QMainWindow):
                                     QMessageBox.Ok)
             return
 
-        dtsiLineNum = int(re.split('[[:-]', includedFile)[-4].strip())
+        dtsiLineNum = int(re.split('[[:-]', fileWithLineNums)[-4].strip())
         self.launchEditor(dtsiFileName, dtsiLineNum)
 
     def editIncludedFile(self):
