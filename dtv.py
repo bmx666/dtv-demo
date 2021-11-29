@@ -259,22 +259,12 @@ class main(QMainWindow):
         self.ui = None
         self.load_ui()
         self.load_signals()
-        self.annotatedTmpDTSFileName = None  # Deleted upon exit
-        self.annotatedDTSFileName = None     # Retained upon exit
         self.findStr = None
         self.foundList = []
         self.foundIndex = 0
 
         if len(sys.argv) > 1:
             self.openDTSFile(sys.argv[1])
-
-    def closeEvent(self, event):
-        # Delete temporary file if created
-        if self.annotatedTmpDTSFileName:
-            try:
-                os.remove(self.annotatedTmpDTSFileName)
-            except OSError:
-                pass
 
     def openDTSFileUI(self):
 
@@ -294,19 +284,24 @@ class main(QMainWindow):
 
             self.ui.setWindowTitle("DTV - " + fileName)
 
-            # Delete temporary file if created (from a previous "open")
-            if self.annotatedTmpDTSFileName:
-                try:
-                    os.remove(self.annotatedTmpDTSFileName)
-                except OSError:
-                    pass
-
             self.findStr = None
             self.foundList = []
             self.foundIndex = 0
 
-            self.annotatedTmpDTSFileName = annotateDTS(self.ui.trwIncludedFiles, fileName)
-            populateDTS(self.ui.trwDT, self.ui.trwIncludedFiles, self.annotatedTmpDTSFileName)
+            annotatedTmpDTSFileName = None
+            try:
+                annotatedTmpDTSFileName = annotateDTS(self.ui.trwIncludedFiles, fileName)
+                populateDTS(self.ui.trwDT, self.ui.trwIncludedFiles, annotatedTmpDTSFileName)
+            except Exception as e:
+                print('EXCEPTION!', e)
+                exit(1)
+            finally:
+                # Delete temporary file if created
+                if annotatedTmpDTSFileName:
+                    try:
+                        os.remove(annotatedTmpDTSFileName)
+                    except OSError:
+                        pass
 
             self.trwDT.header().setSectionResizeMode(0, QHeaderView.ResizeToContents)
             self.trwDT.header().setSectionResizeMode(2, QHeaderView.ResizeToContents)
