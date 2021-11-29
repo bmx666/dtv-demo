@@ -43,3 +43,10 @@
 		prop_new;
 	};
 };
+
+/* add label for NodeC */
+nodeE: &nodeD {};
+
+/ {
+	/delete-node/ nodeC;
+};
