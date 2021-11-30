@@ -1,5 +1,15 @@
 # Device Tree Visualizer
 
+## screenshots
+
+DTV with original dtc
+
+![DTV with original dtc](screenshot/dtv-demo_dtc_original.png?raw=true "DTV with original dtc")
+
+DTV with patched dtc
+
+![DTV with patched dtc](screenshot/dtv-demo_dtc_patched.png?raw=true "DTV with patched dtc")
+
 ## requirements
 
 1. python3 -m pip install -r requirements.txt
