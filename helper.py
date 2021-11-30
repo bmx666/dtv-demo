@@ -24,7 +24,7 @@ def loadConfig(baseDirPath):
 
     return incIncludes
 
-def annotateDTS(dtsFile, incIncludes):
+def annotateDTS(dtsFile, incIncludes, level = 5):
 
     # force include dir of dtsFile
     cppIncludes = ' -I ' + os.path.dirname(dtsFile)
@@ -52,7 +52,7 @@ def annotateDTS(dtsFile, incIncludes):
 
     try:
         dtc = 'dtc'
-        dtcFlags = ' -@ -I dts -O dts -f -s -T -T -T -T -T -o - '
+        dtcFlags = ' -@ -I dts -O dts -f -s ' + (' -T ' * level) + ' -o - '
         dtcResult = subprocess.run(dtc + dtcIncludes + dtcFlags,
                                    stdout=PIPE, stderr=PIPE, input=cppResult.stdout, shell=True, check=True)
 
