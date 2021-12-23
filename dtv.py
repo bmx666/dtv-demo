@@ -214,7 +214,7 @@ class main(QMainWindow):
         # If user selected a file then process it...
         if fileName:
             # Resolve symlinks
-            filename = os.path.realpath(fileName)
+            fileName = os.path.realpath(fileName)
 
             self.ui.setWindowTitle("DTV - " + fileName)
 
