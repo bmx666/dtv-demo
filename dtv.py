@@ -11,6 +11,8 @@ from subprocess import PIPE
 import sys
 import tempfile
 
+from xdg import BaseDirectory
+
 from includetree import includeTree
 from helper import loadConfig, annotateDTS
 
@@ -174,8 +176,8 @@ def center(window):
 
     # Determine the center of mainwindow
     centerPoint = QtCore.QPoint()
-    centerPoint.setX(main.x() + (main.width()/2))
-    centerPoint.setY(main.y() + (main.height()/2))
+    centerPoint.setX(Main.x() + (Main.width()/2))
+    centerPoint.setY(Main.y() + (Main.height()/2))
 
     # Calculate the current window's top-left such that
     # its center co-incides with the mainwindow's center
@@ -185,7 +187,7 @@ def center(window):
     # Align current window as per above calculations
     window.move(frameGm.topLeft())
 
-class main(QMainWindow):
+class Main(QMainWindow):
 
 
     def __init__(self):
@@ -199,6 +201,26 @@ class main(QMainWindow):
 
         if len(sys.argv) > 1:
             self.openDTSFile(sys.argv[1])
+
+    def getRecentFilenames():
+        cache_dir = BaseDirectory.save_cache_path("device-tree-visualiser")
+        try:
+            file = open( os.path.join(cache_dir, "recent.list") )
+            return file.readlines()
+        except:
+            return []
+
+    def pushToRecentFilenames(filename):
+        cache_dir = BaseDirectory.save_cache_path("device-tree-visualiser")
+        with open( os.path.join(cache_dir, "recent.list"), 'a' ) as file:
+            try:
+                # If filename is not a relative/absolute path to existing file
+                # this may fail
+                filepath = os.path.realpath(filename)
+                file.write(filepath + '\n')
+            except:
+                print("WARNING: Invalid or non existent file passed to"
+                    "pushToRecentFilenames: ", filename, file=sys.stderr)
 
     def openDTSFileUI(self):
 
@@ -385,10 +407,12 @@ except subprocess.CalledProcessError as e:
 
 app = QApplication(sys.argv)
 
-main = main()
+main = Main()
 
 # Blocks till Qt app is running, returns err code if any
 qtReturnVal = app.exec_()
+
+#Main.pushToRecentFilenames("screenshot/dtv-demo_dtc_original.png")
 
 sys.exit(qtReturnVal)
 
