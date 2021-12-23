@@ -199,24 +199,30 @@ class Main(QMainWindow):
         self.findStr = None
         self.foundList = []
         self.foundIndex = 0
+        self.last_chosen_directory = os.path.curdir;
 
         if len(sys.argv) > 1:
             self.openDTSFile(sys.argv[1])
 
+    # Returns a dictionary, schema: {filename(str): timestamp(number)}
     def getRecentFilenames():
         cache_dir = BaseDirectory.save_cache_path("device-tree-visualiser")
         recents = {}
         try:
             with open( str(os.path.join(cache_dir, "recent.list")) ) as file:
-                # Using separater ';', b/w timestamp & filename
                 for line in file.readlines():
+                    line = line.strip()
+                    if line == "":
+                        continue
+
+                    # Using separater ';', b/w timestamp & filename
                     [timestamp, filename] = line.split(';')[0:2]
-                    recents[filename] = timestamp
+                    recents[filename.strip()] = int(timestamp)
 
                 return recents
         except Exception as e:
             print("WARNING: ", e, file=sys.stderr)
-            return {}
+            return recents
 
     def pushToRecentFilenames(filename):
         timestamp = int(time.time())
@@ -254,11 +260,14 @@ class Main(QMainWindow):
     def openDTSFileUI(self):
 
         options = QFileDialog.Options()
-        fileName, _ = QFileDialog.getOpenFileName(self,
-                                                  "Select a DTS file to visualise...",
-                                                  "", "All DTS Files (*.dts)",
+        filePath, _ = QFileDialog.getOpenFileName(self,
+                                                  caption="Select a DTS file to visualise...",
+                                                  directory=self.last_chosen_directory,
+                                                  filter ="All DTS Files (*.dts)",
                                                   options=options)
-        self.openDTSFile(fileName)
+
+        self.last_chosen_directory = os.path.dirname(filePath)
+        self.openDTSFile(filePath)
 
     def openDTSFile(self, fileName):
 
@@ -287,7 +296,7 @@ class Main(QMainWindow):
                 exit(1)
             finally:
                 # Save in recent files
-                Main.pushToRecentFilenames(filename)
+                Main.pushToRecentFilenames(fileName)
 
                 # Delete temporary file if created
                 if annotatedTmpDTSFileName:
