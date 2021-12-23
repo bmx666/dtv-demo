@@ -23,7 +23,7 @@ import argparse
 ########################################################################################################################
 # Helper Functions
 ########################################################################################################################
-def parse_fdt(file_path: str, file_type: str):
+def parse_fdt(file_path: str, file_type: str, is_only_diff: bool = False):
     """
     Parse *.dtb ot *.dts input file and return FDT object
 
@@ -47,7 +47,7 @@ def parse_fdt(file_path: str, file_type: str):
             obj = fdt.parse_dtb(f.read())
     else:
         with open(file_path, 'r') as f:
-            obj = fdt.parse_dts(f.read(), os.path.dirname(file_path))
+            obj = fdt.parse_dts(f.read(), os.path.dirname(file_path), is_only_diff)
 
     return obj
 
@@ -131,8 +131,8 @@ def diff(in_file1: str, in_file2: str, file_type: str, out_dir: str):
     :param out_dir: Path to output directory
     """
     # load input files
-    fdt1 = parse_fdt(in_file1, file_type)
-    fdt2 = parse_fdt(in_file2, file_type)
+    fdt1 = parse_fdt(in_file1, file_type, True)
+    fdt2 = parse_fdt(in_file2, file_type, True)
 
     # compare it
     diff = fdt.diff(fdt1, fdt2)

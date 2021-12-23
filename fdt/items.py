@@ -255,6 +255,49 @@ class PropStrings(Property):
         return blob, strings, pos
 
 
+class PropVariables(Property):
+    """Property with variable as value"""
+
+    @property
+    def value(self):
+        return self.data
+
+    def __init__(self, name: str, data):
+        """
+        PropVariables constructor
+
+        :param name: Property name
+        :param data: Property value
+        """
+        super().__init__(name)
+        self.data = data
+
+    def __str__(self):
+        """ String representation """
+        return "{} = {}".format(self.name, self.data)
+
+    def __eq__(self, obj):
+        """ Check PropVariables object equality """
+        return isinstance(obj, PropVariables) and self.name == obj.name and self.data == obj.data
+
+    def copy(self):
+        """ Get object copy """
+        return PropVariables(self.name, self.data)
+
+    def to_dts(self, tabsize: int = 4, depth: int = 0):
+        """
+        Get string representation
+
+        :param tabsize: Tabulator size in count of spaces
+        :param depth: Start depth for line
+        """
+        result  = line_offset(tabsize, depth, self.name)
+        result += ' = '
+        result += self.data
+        result += ';\n'
+        return result
+
+
 class PropWords(Property):
     """Property with words as value"""
 
