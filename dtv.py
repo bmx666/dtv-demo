@@ -10,6 +10,7 @@ import subprocess
 from subprocess import PIPE
 import sys
 import tempfile
+import time
 
 from xdg import BaseDirectory
 
@@ -204,23 +205,51 @@ class Main(QMainWindow):
 
     def getRecentFilenames():
         cache_dir = BaseDirectory.save_cache_path("device-tree-visualiser")
+        recents = {}
         try:
-            file = open( os.path.join(cache_dir, "recent.list") )
-            return file.readlines()
-        except:
-            return []
+            with open( str(os.path.join(cache_dir, "recent.list")) ) as file:
+                # Using separater ';', b/w timestamp & filename
+                for line in file.readlines():
+                    [timestamp, filename] = line.split(';')[0:2]
+                    recents[filename] = timestamp
+
+                return recents
+        except Exception as e:
+            print("WARNING: ", e, file=sys.stderr)
+            return {}
 
     def pushToRecentFilenames(filename):
+        timestamp = int(time.time())
+
+        # TODO: Handle case for Windows
         cache_dir = BaseDirectory.save_cache_path("device-tree-visualiser")
-        with open( os.path.join(cache_dir, "recent.list"), 'a' ) as file:
-            try:
-                # If filename is not a relative/absolute path to existing file
-                # this may fail
-                filepath = os.path.realpath(filename)
-                file.write(filepath + '\n')
-            except:
-                print("WARNING: Invalid or non existent file passed to"
-                    "pushToRecentFilenames: ", filename, file=sys.stderr)
+        recents_filepath = os.path.join(cache_dir, "recent.list")
+
+        # just 'touch' the file
+        if not os.path.exists(recents_filepath):
+            open(recents_filepath, 'w').close()
+
+        # recents is a dictionary, key is filename(str): value is timestamp (int)
+        recents = Main.getRecentFilenames()
+
+        try:
+            # If filename is not a relative/absolute path to existing file this may fail
+            filepath = os.path.realpath(filename)
+
+            # If `filename` is not present in `recents`, this will always be true, Else update with the newer timestamp
+            # TODO: This is redundant for general cases, since `timestamp` will always be greater than existing timestamp since it would have been in the past
+            if (recents.get(filepath) or 0) < timestamp:
+                recents[filepath] = timestamp
+        except Exception as e:
+            print("WARNING: Invalid or non existent file passed to"
+                "pushToRecentFilenames:", e, file=sys.stderr)
+
+        with open( recents_filepath, 'w' ) as file:
+            # Using separater ';', b/w timestampt & filename
+            for fname in recents:
+                file.write(str(recents[fname]) + ';' + fname + '\n')
+
+            return recents
 
     def openDTSFileUI(self):
 
@@ -257,6 +286,9 @@ class Main(QMainWindow):
                 print('EXCEPTION!', e)
                 exit(1)
             finally:
+                # Save in recent files
+                Main.pushToRecentFilenames(filename)
+
                 # Delete temporary file if created
                 if annotatedTmpDTSFileName:
                     try:
@@ -411,8 +443,6 @@ main = Main()
 
 # Blocks till Qt app is running, returns err code if any
 qtReturnVal = app.exec_()
-
-#Main.pushToRecentFilenames("screenshot/dtv-demo_dtc_original.png")
 
 sys.exit(qtReturnVal)
 
