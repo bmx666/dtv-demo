@@ -12,7 +12,10 @@ import sys
 import tempfile
 import time
 
-from xdg import BaseDirectory
+try:
+    from xdg import BaseDirectory
+except:
+    print("Couldn't Import xdg (Not an error")
 
 from includetree import includeTree
 from helper import loadConfig, annotateDTS
@@ -205,8 +208,14 @@ class Main(QMainWindow):
             self.openDTSFile(sys.argv[1])
 
     # Returns a dictionary, schema: {filename(str): timestamp(number)}
+    # To get array of filenames, in order from newest (at index 0) to oldest, just use getRecentFilenames().values(), then .reverse()... It will NOT throw :)
     def getRecentFilenames():
-        cache_dir = BaseDirectory.save_cache_path("device-tree-visualiser")
+        try:
+            cache_dir = BaseDirectory.save_cache_path("device-tree-visualiser")
+        except:
+            print("Using current directory for temporary files", file=sys.stderr)
+            cache_dir = os.path.curdir
+
         recents = {}
         try:
             with open( str(os.path.join(cache_dir, "recent.list")) ) as file:
@@ -227,8 +236,12 @@ class Main(QMainWindow):
     def pushToRecentFilenames(filename):
         timestamp = int(time.time())
 
-        # TODO: Handle case for Windows
-        cache_dir = BaseDirectory.save_cache_path("device-tree-visualiser")
+        try:
+            cache_dir = BaseDirectory.save_cache_path("device-tree-visualiser")
+        except:
+            print("Using current directory for temporary files", file=sys.stderr)
+            cache_dir = os.path.curdir
+
         recents_filepath = os.path.join(cache_dir, "recent.list")
 
         # just 'touch' the file
