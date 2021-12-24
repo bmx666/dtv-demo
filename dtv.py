@@ -9,10 +9,10 @@ import string
 import subprocess
 from subprocess import PIPE
 import sys
-import tempfile
 
 from includetree import includeTree
 from helper import loadConfig, annotateDTS
+from merge import mergeDts
 
 from PyQt5.QtGui import QColor, QDesktopServices
 from PyQt5 import QtCore, QtGui, QtWidgets
@@ -197,8 +197,13 @@ class main(QMainWindow):
         self.foundList = []
         self.foundIndex = 0
 
-        if len(sys.argv) > 1:
-            self.openDTSFile(sys.argv[1])
+        argc = len(sys.argv)
+        if argc > 1:
+            dts_file = sys.argv[1]
+            if argc == 2:
+                self.openDTSFile(dts_file)
+            else:
+                self.openDTSFile(mergeDts(sys.argv[1:]), dts_file)
 
     def openDTSFileUI(self):
 
@@ -209,7 +214,7 @@ class main(QMainWindow):
                                                   options=options)
         self.openDTSFile(fileName)
 
-    def openDTSFile(self, fileName):
+    def openDTSFile(self, fileName, baseDtsFileName = None):
 
         # If user selected a file then process it...
         if fileName:
@@ -224,8 +229,13 @@ class main(QMainWindow):
 
             annotatedTmpDTSFileName = None
             try:
+                if baseDtsFileName:
+                    fileForCheckBaseDir = os.path.realpath(baseDtsFileName)
+                else:
+                    fileForCheckBaseDir = fileName
+
                 # Current parser "plugin" claims to support DTS files under arch/* only
-                baseDirPath = re.search('^.*(?=arch\/)', fileName).group(0)
+                baseDirPath = re.search('^.*(?=arch\/)', fileForCheckBaseDir).group(0)
                 incIncludes = loadConfig(baseDirPath)
 
                 annotatedTmpDTSFileName = annotateDTS(fileName, incIncludes)
