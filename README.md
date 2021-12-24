@@ -10,6 +10,10 @@ DTV with patched dtc
 
 ![DTV with patched dtc](screenshot/dtv-demo_dtc_patched.png?raw=true "DTV with patched dtc")
 
+DTV with overlays
+
+![DTV with overlays](screenshot/dtv-demo_overlays.png?raw=true "DTV with overlays")
+
 ## requirements
 
 1. python3 -m pip install -r requirements.txt<br>
