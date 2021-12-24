@@ -435,6 +435,10 @@ def parse_dts(text: str, root_dir: str = '', is_only_diff: bool = False) -> FDT:
                 prop_name = line[0].rstrip(' ')
                 prop_value = line[1].lstrip(' ')
 
+                if prop_name == 'phandle' or \
+                   prop_name == 'linux,phandle':
+                   continue
+
                 if is_only_diff:
                     prop_obj = PropVariables(prop_name, prop_value)
                 else:
