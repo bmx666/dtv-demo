@@ -27,6 +27,20 @@ Patched dtc version add extra annotate flags:
 * set your preferred editor in env `editor_cmd`
 * include extra dts paths into list `include_dir_stubs`
 
+## command line usage
+
+* open dts
+
+```
+python3 dtv.py /path/to/some.dts
+```
+
+* display final dts with applied overlays on base dts
+
+```
+python3 dtv.py /path/to/base.dts /path/to/overlay1.dts /path/to/overlay2.dts
+```
+
 ## overlays
 
 ### Linux
