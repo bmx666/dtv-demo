@@ -43,7 +43,7 @@ Patched dtc version add extra annotate flags:
 };
 ```
 
-*TBD: automatically apply overlays*
+DTV supports feature to automatically generate temporary overlays by using [ovmerge util from Rasberry Pi](https://github.com/raspberrypi/utils) and [included modified Python fdt library](https://github.com/molejar/pyFDT)
 
 ### Android
 
