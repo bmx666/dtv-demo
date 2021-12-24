@@ -10,7 +10,19 @@ import tempfile
 def getFileName(filename: str):
     return os.path.splitext(os.path.basename(filename))[0]
 
-def loadConfig(baseDirPath):
+def loadConfig(baseDtsFile):
+
+    baseAbsPath = os.path.abspath(baseDtsFile)
+    baseRealPath = os.path.realpath(baseDtsFile)
+
+    baseDirPaths = set()
+    result_abspath = re.search('^.*(?=arch\/)', baseAbsPath)
+    result_realpath = re.search('^.*(?=arch\/)', baseRealPath)
+
+    if result_abspath:
+        baseDirPaths.add(result_abspath.group(0))
+    if result_realpath:
+        baseDirPaths.add(result_realpath.group(0))
 
     # Load configuration for the conf file
     config = configparser.ConfigParser()
@@ -23,8 +35,9 @@ def loadConfig(baseDirPath):
     incIncludes = list()
 
     for includeDirStub in includeDirStubs:
-        if os.path.exists(baseDirPath + includeDirStub):
-            incIncludes.append(baseDirPath + includeDirStub)
+        for baseDirPath in baseDirPaths:
+            if os.path.exists(baseDirPath + includeDirStub):
+                incIncludes.append(baseDirPath + includeDirStub)
 
     return incIncludes
 

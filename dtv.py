@@ -218,8 +218,8 @@ class main(QMainWindow):
 
         # If user selected a file then process it...
         if fileName:
-            # Resolve symlinks
-            fileName = os.path.realpath(fileName)
+            # Don't resolve symlinks in path
+            fileName = os.path.abspath(fileName)
 
             self.ui.setWindowTitle("DTV - " + fileName)
 
@@ -230,14 +230,12 @@ class main(QMainWindow):
             annotatedTmpDTSFileName = None
             try:
                 if baseDtsFileName:
-                    fileForCheckBaseDir = os.path.realpath(baseDtsFileName)
+                    incIncludes = loadConfig(baseDtsFileName)
                 else:
-                    fileForCheckBaseDir = fileName
+                    incIncludes = loadConfig(fileName)
 
-                # Current parser "plugin" claims to support DTS files under arch/* only
-                baseDirPath = re.search('^.*(?=arch\/)', fileForCheckBaseDir).group(0)
-                incIncludes = loadConfig(baseDirPath)
-
+                # Resolve symlinks in path
+                fileName = os.path.realpath(fileName)
                 annotatedTmpDTSFileName = annotateDTS(fileName, incIncludes)
                 populateIncludedFiles(self.ui.trwIncludedFiles, fileName, incIncludes)
                 populateDTS(self.ui.trwDT, self.ui.trwIncludedFiles, annotatedTmpDTSFileName)

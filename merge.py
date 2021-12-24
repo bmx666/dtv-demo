@@ -11,8 +11,7 @@ from fdt.__main__ import diff as fdt_diff
 
 def mergeDts(dts_files):
 
-    baseDirPath = re.search('^.*(?=arch\/)', dts_files[0]).group(0)
-    incIncludes = loadConfig(baseDirPath)
+    incIncludes = loadConfig(dts_files[0])
 
     for dts in dts_files:
         incIncludes.append(os.path.dirname(os.path.realpath(dts)))
