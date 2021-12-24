@@ -10,6 +10,10 @@ DTV with patched dtc
 
 ![DTV with patched dtc](screenshot/dtv-demo_dtc_patched.png?raw=true "DTV with patched dtc")
 
+DTV with overlays
+
+![DTV with overlays](screenshot/dtv-demo_overlays.png?raw=true "DTV with overlays")
+
 ## requirements
 
 1. python3 -m pip install -r requirements.txt<br>
@@ -27,6 +31,20 @@ Patched dtc version add extra annotate flags:
 * set your preferred editor in env `editor_cmd`
 * include extra dts paths into list `include_dir_stubs`
 
+## command line usage
+
+* open dts
+
+```
+python3 dtv.py /path/to/some.dts
+```
+
+* display final dts with applied overlays on base dts
+
+```
+python3 dtv.py /path/to/base.dts /path/to/overlay1.dts /path/to/overlay2.dts
+```
+
 ## overlays
 
 ### Linux
@@ -43,7 +61,7 @@ Patched dtc version add extra annotate flags:
 };
 ```
 
-*TBD: automatically apply overlays*
+DTV supports feature to automatically generate temporary overlays by using [ovmerge util from Rasberry Pi](https://github.com/raspberrypi/utils) and [included modified Python fdt library](https://github.com/molejar/pyFDT)
 
 ### Android
 
