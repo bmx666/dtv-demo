@@ -7,6 +7,9 @@ from subprocess import PIPE
 import sys
 import tempfile
 
+def getFileName(filename: str):
+    return os.path.splitext(os.path.basename(filename))[0]
+
 def loadConfig(baseDirPath):
 
     # Load configuration for the conf file
