@@ -23,7 +23,8 @@ def loadConfig(baseDirPath):
     incIncludes = list()
 
     for includeDirStub in includeDirStubs:
-        incIncludes.append(baseDirPath + includeDirStub)
+        if os.path.exists(baseDirPath + includeDirStub):
+            incIncludes.append(baseDirPath + includeDirStub)
 
     return incIncludes
 
