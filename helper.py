@@ -74,8 +74,8 @@ def annotateDTS(dtsFile, incIncludes, out_dir = None, level = 5):
 
     # Create a temporary file in the current working directory
     (tmpAnnotatedFile, tmpAnnotatedFileName) = tempfile.mkstemp(dir=out_dir,
-                                                                prefix=os.path.basename(dtsFile) + '-',
-                                                                suffix='.dts.annotated')
+                                                                prefix=getFileName(dtsFile) + '-annotated-',
+                                                                suffix='.dts')
     with os.fdopen(tmpAnnotatedFile, 'w') as output:
         output.write(dtcResult.stdout.decode('utf-8') )
 
