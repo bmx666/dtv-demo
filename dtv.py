@@ -10,6 +10,12 @@ import subprocess
 from subprocess import PIPE
 import sys
 import tempfile
+import time
+
+try:
+    from xdg import BaseDirectory
+except:
+    print("Couldn't Import xdg (Not an error")
 
 from includetree import includeTree
 from helper import loadConfig, annotateDTS
@@ -174,8 +180,8 @@ def center(window):
 
     # Determine the center of mainwindow
     centerPoint = QtCore.QPoint()
-    centerPoint.setX(main.x() + (main.width()/2))
-    centerPoint.setY(main.y() + (main.height()/2))
+    centerPoint.setX(Main.x() + (Main.width()/2))
+    centerPoint.setY(Main.y() + (Main.height()/2))
 
     # Calculate the current window's top-left such that
     # its center co-incides with the mainwindow's center
@@ -185,7 +191,7 @@ def center(window):
     # Align current window as per above calculations
     window.move(frameGm.topLeft())
 
-class main(QMainWindow):
+class Main(QMainWindow):
 
 
     def __init__(self):
@@ -196,18 +202,85 @@ class main(QMainWindow):
         self.findStr = None
         self.foundList = []
         self.foundIndex = 0
+        self.last_chosen_directory = os.path.curdir;
 
         if len(sys.argv) > 1:
             self.openDTSFile(sys.argv[1])
 
+    # Returns a dictionary, schema: {filename(str): timestamp(number)}
+    # To get array of filenames, in order from newest (at index 0) to oldest, just use getRecentFilenames().values(), then .reverse()... It will NOT throw :)
+    def getRecentFilenames():
+        try:
+            cache_dir = BaseDirectory.save_cache_path("device-tree-visualiser")
+        except:
+            print("Using current directory for temporary files", file=sys.stderr)
+            cache_dir = os.path.curdir
+
+        recents = {}
+        try:
+            with open( str(os.path.join(cache_dir, "recent.list")) ) as file:
+                for line in file.readlines():
+                    line = line.strip()
+                    if line == "":
+                        continue
+
+                    # Using separater ';', b/w timestamp & filename
+                    [timestamp, filename] = line.split(';')[0:2]
+                    recents[filename.strip()] = int(timestamp)
+
+                return recents
+        except Exception as e:
+            print("WARNING: ", e, file=sys.stderr)
+            return recents
+
+    def pushToRecentFilenames(filename):
+        timestamp = int(time.time())
+
+        try:
+            cache_dir = BaseDirectory.save_cache_path("device-tree-visualiser")
+        except:
+            print("Using current directory for temporary files", file=sys.stderr)
+            cache_dir = os.path.curdir
+
+        recents_filepath = os.path.join(cache_dir, "recent.list")
+
+        # just 'touch' the file
+        if not os.path.exists(recents_filepath):
+            open(recents_filepath, 'w').close()
+
+        # recents is a dictionary, key is filename(str): value is timestamp (int)
+        recents = Main.getRecentFilenames()
+
+        try:
+            # If filename is not a relative/absolute path to existing file this may fail
+            filepath = os.path.realpath(filename)
+
+            # If `filename` is not present in `recents`, this will always be true, Else update with the newer timestamp
+            # TODO: This is redundant for general cases, since `timestamp` will always be greater than existing timestamp since it would have been in the past
+            if (recents.get(filepath) or 0) < timestamp:
+                recents[filepath] = timestamp
+        except Exception as e:
+            print("WARNING: Invalid or non existent file passed to"
+                "pushToRecentFilenames:", e, file=sys.stderr)
+
+        with open( recents_filepath, 'w' ) as file:
+            # Using separater ';', b/w timestampt & filename
+            for fname in recents:
+                file.write(str(recents[fname]) + ';' + fname + '\n')
+
+            return recents
+
     def openDTSFileUI(self):
 
         options = QFileDialog.Options()
-        fileName, _ = QFileDialog.getOpenFileName(self,
-                                                  "Select a DTS file to visualise...",
-                                                  "", "All DTS Files (*.dts)",
+        filePath, _ = QFileDialog.getOpenFileName(self,
+                                                  caption="Select a DTS file to visualise...",
+                                                  directory=self.last_chosen_directory,
+                                                  filter ="All DTS Files (*.dts)",
                                                   options=options)
-        self.openDTSFile(fileName)
+
+        self.last_chosen_directory = os.path.dirname(filePath)
+        self.openDTSFile(filePath)
 
     def openDTSFile(self, fileName):
 
@@ -235,6 +308,9 @@ class main(QMainWindow):
                 print('EXCEPTION!', e)
                 exit(1)
             finally:
+                # Save in recent files
+                Main.pushToRecentFilenames(fileName)
+
                 # Delete temporary file if created
                 if annotatedTmpDTSFileName:
                     try:
@@ -385,7 +461,7 @@ except subprocess.CalledProcessError as e:
 
 app = QApplication(sys.argv)
 
-main = main()
+main = Main()
 
 # Blocks till Qt app is running, returns err code if any
 qtReturnVal = app.exec_()
