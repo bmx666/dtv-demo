@@ -24,7 +24,14 @@ def loadConfig(baseDirPath):
 
     return incIncludes
 
-def annotateDTS(dtsFile, incIncludes, level = 5):
+def annotateDTS(dtsFile, incIncludes, out_dir = None, level = 5):
+
+    if out_dir:
+        if not os.path.exists(out_dir):
+            print("Path '{}' not found!".format(out_dir))
+            exit(1)
+    else:
+        out_dir = os.path.dirname(os.path.realpath(__file__))
 
     # force include dir of dtsFile
     cppIncludes = ' -I ' + os.path.dirname(dtsFile)
@@ -63,7 +70,7 @@ def annotateDTS(dtsFile, incIncludes, level = 5):
         exit(e.returncode)
 
     # Create a temporary file in the current working directory
-    (tmpAnnotatedFile, tmpAnnotatedFileName) = tempfile.mkstemp(dir=os.path.dirname(os.path.realpath(__file__)),
+    (tmpAnnotatedFile, tmpAnnotatedFileName) = tempfile.mkstemp(dir=out_dir,
                                                                 prefix=os.path.basename(dtsFile) + '-',
                                                                 suffix='.dts.annotated')
     with os.fdopen(tmpAnnotatedFile, 'w') as output:
