@@ -41,7 +41,7 @@ def loadConfig(baseDtsFile):
 
     return incIncludes
 
-def annotateDTS(dtsFile, incIncludes, out_dir = None, level = 5):
+def annotateDTS(dtsFile, incIncludes, out_dir = None, level = 2):
 
     if out_dir:
         if not os.path.exists(out_dir):
@@ -74,9 +74,18 @@ def annotateDTS(dtsFile, incIncludes, out_dir = None, level = 5):
     if dtsPlugin:
         print('DTS file is plugin')
 
+    dtsShowDeletedSupport = True
+    try:
+        subprocess.run('dtc --show-deleted -h', stdout=PIPE, stderr=PIPE, shell=True, check=True)
+    except subprocess.CalledProcessError as e:
+        print('WARNING!', 'dtc version doesn\'t support "show-deleted" option')
+        dtsShowDeletedSupport = False
+
     try:
         dtc = 'dtc'
         dtcFlags = ' -@ -I dts -O dts -f -s ' + (' -T ' * level) + ' -o - '
+        if dtsShowDeletedSupport:
+            dtcFlags += '--show-deleted '
         dtcResult = subprocess.run(dtc + dtcIncludes + dtcFlags,
                                    stdout=PIPE, stderr=PIPE, input=cppResult.stdout, shell=True, check=True)
 
