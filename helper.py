@@ -76,16 +76,16 @@ def annotateDTS(dtsFile, incIncludes, out_dir = None, level = 2):
 
     dtsShowDeletedSupport = True
     try:
-        subprocess.run('dtc --show-deleted -h', stdout=PIPE, stderr=PIPE, shell=True, check=True)
+        subprocess.run('dtc --comment-deleted -h', stdout=PIPE, stderr=PIPE, shell=True, check=True)
     except subprocess.CalledProcessError as e:
-        print('WARNING!', 'dtc version doesn\'t support "show-deleted" option')
+        print('WARNING!', 'dtc version doesn\'t support "comment-deleted" option')
         dtsShowDeletedSupport = False
 
     try:
         dtc = 'dtc'
         dtcFlags = ' -@ -I dts -O dts -f -s ' + (' -T ' * level) + ' -o - '
         if dtsShowDeletedSupport:
-            dtcFlags += '--show-deleted '
+            dtcFlags += '--comment-deleted '
         dtcResult = subprocess.run(dtc + dtcIncludes + dtcFlags,
                                    stdout=PIPE, stderr=PIPE, input=cppResult.stdout, shell=True, check=True)
 
