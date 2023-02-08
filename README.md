@@ -1,5 +1,7 @@
 # Device Tree Visualizer
 
+## Ported to PyQt6, old PyQt5 is not supported (see locked branch [pyqt5](https://github.com/bmx666/dtv-demo/tree/pyqt5))
+
 ## screenshots
 
 DTV with original dtc

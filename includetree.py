@@ -1,6 +1,6 @@
 import os
 import re
-from PyQt5 import QtWidgets
+from PyQt6 import QtWidgets
 import traceback
 
 class includeTree(object):

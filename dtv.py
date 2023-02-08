@@ -14,10 +14,10 @@ from includetree import includeTree
 from helper import loadConfig, annotateDTS
 from merge import mergeDts
 
-from PyQt5.QtGui import QColor, QDesktopServices
-from PyQt5 import QtCore, QtGui, QtWidgets
-from PyQt5.QtWidgets import QApplication, QMainWindow, QFileDialog, QDialog, QHeaderView, QMessageBox
-from PyQt5.uic import loadUi
+from PyQt6.QtGui import QColor, QDesktopServices
+from PyQt6 import QtCore, QtGui, QtWidgets
+from PyQt6.QtWidgets import QApplication, QMainWindow, QFileDialog, QDialog, QHeaderView, QMessageBox
+from PyQt6.uic import loadUi
 
 DELETED_TAG = "__[|>*DELETED*<|]__"
 
@@ -132,7 +132,7 @@ def populateIncludedFiles(trwIncludedFiles, dtsFile, inputIncludeDirs):
 def highlightFileInTree(trwIncludedFiles, fileWithLineNums):
     filePath = fileWithLineNums.split(':', 1)[0]
     fileName = filePath.split('/')[-1]
-    items = trwIncludedFiles.findItems(fileName, QtCore.Qt.MatchRecursive)
+    items = trwIncludedFiles.findItems(fileName, QtCore.Qt.MatchFlag.MatchRecursive)
     currItem = next(item for item in items if item.toolTip(0) == filePath)
 
     # highlight/select current item
@@ -207,11 +207,10 @@ class main(QMainWindow):
 
     def openDTSFileUI(self):
 
-        options = QFileDialog.Options()
         fileName, _ = QFileDialog.getOpenFileName(self,
                                                   "Select a DTS file to visualise...",
                                                   "", "All DTS Files (*.dts)",
-                                                  options=options)
+                                                  )
         self.openDTSFile(fileName)
 
     def openDTSFile(self, fileName, baseDtsFileName = None):
@@ -250,8 +249,8 @@ class main(QMainWindow):
                     except OSError:
                         pass
 
-            self.trwDT.header().setSectionResizeMode(0, QHeaderView.ResizeToContents)
-            self.trwDT.header().setSectionResizeMode(2, QHeaderView.ResizeToContents)
+            self.trwDT.header().setSectionResizeMode(0, QHeaderView.ResizeMode.ResizeToContents)
+            self.trwDT.header().setSectionResizeMode(2, QHeaderView.ResizeMode.ResizeToContents)
             self.trwDT.header().setSectionHidden(3, True)
             self.trwDT.header().resizeSection(1, 500)
 
@@ -291,7 +290,7 @@ class main(QMainWindow):
                             'Failed to launch editor!\n\n' +
                             editorCommandEvaluated +
                             '\n\nPlease modify "dtv.conf" using any text editor.',
-                            QMessageBox.Ok)
+                            QMessageBox.StandardButton.Ok)
 
     def editSourceFile(self):
 
@@ -303,7 +302,7 @@ class main(QMainWindow):
             QMessageBox.information(self,
                                     'DTV',
                                     'No file for the curent line',
-                                    QMessageBox.Ok)
+                                    QMessageBox.StandardButton.Ok)
             return
 
         dtsiLineNum = int(re.split('[[:-]', fileWithLineNums)[-4].strip())
@@ -346,13 +345,12 @@ class main(QMainWindow):
                             'DTV',
                             'Settings GUI NOT supported yet.\n'
                             'Please modify "dtv.conf" using any text editor.',
-                            QMessageBox.Ok)
+                            QMessageBox.StandardButton.Ok)
         return
 
     def center(self):
         frameGm = self.frameGeometry()
-        screen = QtWidgets.QApplication.desktop().screenNumber(QtWidgets.QApplication.desktop().cursor().pos())
-        centerPoint = QtWidgets.QApplication.desktop().screenGeometry(screen).center()
+        centerPoint = self.screen().availableGeometry().center()
         frameGm.moveCenter(centerPoint)
         self.move(frameGm.topLeft())
 
@@ -396,7 +394,7 @@ app = QApplication(sys.argv)
 main = main()
 
 # Blocks till Qt app is running, returns err code if any
-qtReturnVal = app.exec_()
+qtReturnVal = app.exec()
 
 sys.exit(qtReturnVal)
 
