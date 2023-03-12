@@ -19,6 +19,8 @@ from PyQt6 import QtCore, QtGui, QtWidgets
 from PyQt6.QtWidgets import QApplication, QMainWindow, QFileDialog, QDialog, QHeaderView, QMessageBox
 from PyQt6.uic import loadUi
 
+import qdarktheme
+
 DELETED_TAG = "__[|>*DELETED*<|]__"
 
 def getTopLevelItem(trwDT):
@@ -390,6 +392,7 @@ except subprocess.CalledProcessError as e:
     exit(e.returncode)
 
 app = QApplication(sys.argv)
+qdarktheme.setup_theme("light")
 
 main = main()
 
