@@ -22,7 +22,7 @@ _for Ubuntu 16.04_: in `requirements.txt` set `PyQt5==5.14.0`
 4. dtc >= 1.5.0 (must support `--annotate` flag) or [patched dtc](https://github.com/bmx666/dtc)
 
 Patched dtc version add extra annotate flags:
-* show full list of sources for properties
+* show full list of sources for nodes, labels and properties
 * prepend comment `/* __[|>*DELETED*<|]__ */` for deleted nodes, labels or properties and comment out them all
 * mark all childs of deleted nodes as deleted and do not remove childs
 
