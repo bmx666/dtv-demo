@@ -19,9 +19,10 @@ DTV with overlays
 ## requirements
 
 1. python3 -m pip install -r requirements.txt<br>
-_for Ubuntu 16.04_: in `requirements.txt` set `PyQt5==5.14.0`
-3. cpp >= 5.4.0
-4. dtc >= 1.5.0 (must support `--annotate` flag) or [patched dtc](https://github.com/bmx666/dtc)
+2. cpp >= 5.4.0
+3. dtc >= 1.5.0 (must support `--annotate` flag) or [patched dtc](https://github.com/bmx666/dtc)
+
+_for python3.12_: add flag for pip3 `--ignore-requires-python` because `pyqtdarktheme` does [not compatible with Python 3.12+](https://github.com/5yutan5/PyQtDarkTheme/issues/252).
 
 Patched dtc version add extra annotate flags:
 * show full list of sources for nodes, labels and properties
